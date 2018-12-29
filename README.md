@@ -1,4 +1,4 @@
-# NUMERICAL METHODS : Solving Ordinary and Partial Differential Equations#
+# NUMERICAL METHODS : Solving Ordinary and Partial Differential Equations #
 
 This repository contains solution to partial differential equations, corresponding to the following two problems in the domain of mechanics.
 
