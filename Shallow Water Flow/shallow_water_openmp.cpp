@@ -20,7 +20,6 @@
 using namespace std;
 
 // Simulation Parameters
-
 const int MAX_THREADS = 24;
 
 const double x_min = 0.0;
@@ -39,7 +38,6 @@ const int N_y = (y_max - y_min)/Delta_y + 1;
 const int N_t = (t_max - t_min)/Delta_t + 1;
 
 // problem constants
-
 const double g = 9.81; // gravitational constant
 
 // Runge-kutta method functions
@@ -48,7 +46,6 @@ void f_vy(double** v_x, double** v_y, double** h, double** f);
 void f_h(double** v_x, double** v_y, double** h, double** f);
 
 // utility functions
-
 double** create_2darray(int m, int n);
 void dump_f(fstream &file, double** arr);
 void apply_periodic_boundary(double** arr);
@@ -67,6 +64,7 @@ int main(int argc, char** argv)
     int grid_nx = N_x + 6;
     int grid_ny = N_y + 6;
 
+    // Declare variables of shallow water equations
     double** h      = create_2darray(grid_nx,grid_ny);
     double** v_x    = create_2darray(grid_nx,grid_ny);
     double** v_y    = create_2darray(grid_nx,grid_ny);
@@ -75,6 +73,7 @@ int main(int argc, char** argv)
     double** v_x_t  = create_2darray(grid_nx,grid_ny);
     double** v_y_t  = create_2darray(grid_nx,grid_ny);
 
+    //Declare variables for RK4 method
     double** k1_vx  = create_2darray(grid_nx,grid_ny);
     double** k2_vx  = create_2darray(grid_nx,grid_ny);
     double** k3_vx  = create_2darray(grid_nx,grid_ny);
@@ -91,7 +90,7 @@ int main(int argc, char** argv)
     double** k4_h   = create_2darray(grid_nx,grid_ny);
 
     double wtime    = omp_get_wtime();
-//    omp_set_num_threads(MAX_THREADS);
+    // omp_set_num_threads(MAX_THREADS);
     int N_threads   = omp_get_max_threads();
 
 
@@ -106,6 +105,7 @@ int main(int argc, char** argv)
         }
     }
 
+    // initialize h on boundary
     int end = N_y + 6;
     #pragma omp for schedule(static)
     for(int x = 0; x<N_x+6; x++)
@@ -120,6 +120,7 @@ int main(int argc, char** argv)
         h[x][end-1]=h[x][5];
     }
 
+    // initialize h on boundary
     end = N_x + 6;
     #pragma omp for schedule(static)
     for(int y = 0; y<N_y+6; y++)
@@ -135,7 +136,6 @@ int main(int argc, char** argv)
     }
 
     // time marching loop
-
     double time = 0.00;
     int int_t =0;
     char name[30];
@@ -143,10 +143,9 @@ int main(int argc, char** argv)
     {
         for(l=0; l<N_t; l++)
         {
+            //write to file **Uncomment to push
 
-            //write to file
-
-    	    //int_t = (int)(time/Delta_t);
+            //int_t = (int)(time/Delta_t);
             //#pragma omp single
             //if(int_t%(int)(1/Delta_t)==0)
             //{
@@ -157,6 +156,7 @@ int main(int argc, char** argv)
             //    file.close();
             //}
 
+            // Calculate k1 values
             f_vx(v_x,v_y,h,k1_vx);
             f_vy(v_x,v_y,h,k1_vy);
             f_h(v_x,v_y,h,k1_h);
@@ -171,10 +171,12 @@ int main(int argc, char** argv)
                     h_t[x][y]     = h[x][y]     +   0.5*Delta_t*k1_h[x][y];
                 }
             }
+            // Message passing for sharing updated boundary point info
             apply_periodic_boundary(v_x_t);
             apply_periodic_boundary(v_y_t);
             apply_periodic_boundary(h_t);
 
+            // Calculate k2 values
             f_vx(v_x_t,v_y_t,h_t,k2_vx);
             f_vy(v_x_t,v_y_t,h_t,k2_vy);
             f_h(v_x_t,v_y_t,h_t,k2_h);
@@ -189,10 +191,12 @@ int main(int argc, char** argv)
                     h_t[x][y]    =   h[x][y]    +   0.5*Delta_t*k2_h[x][y];
                 }
             }
+            // Message passing for sharing updated boundary point info
             apply_periodic_boundary(v_x_t);
             apply_periodic_boundary(v_y_t);
             apply_periodic_boundary(h_t);
 
+            // Calculate k3 values
             f_vx(v_x_t,v_y_t,h_t, k3_vx);
             f_vy(v_x_t,v_y_t,h_t, k3_vy);
             f_h(v_x_t,v_y_t,h_t, k3_h);
@@ -207,14 +211,17 @@ int main(int argc, char** argv)
                     h_t[x][y]    =   h[x][y]+Delta_t*k3_h[x][y];
                 }
             }
+            // Message passing for sharing updated boundary point info
             apply_periodic_boundary(v_x_t);
             apply_periodic_boundary(v_y_t);
             apply_periodic_boundary(h_t);
 
+            // Calculate k4 values
             f_vx(v_x_t,v_y_t,h_t, k4_vx);
             f_vy(v_x_t,v_y_t,h_t, k4_vy);
             f_h(v_x_t,v_y_t,h_t, k4_h);
 
+            //RK4
             #pragma omp for schedule(static)
             for(x=3; x<N_x+3; x++)
             {
@@ -229,7 +236,7 @@ int main(int argc, char** argv)
                 }
             }
 
-            // set up the periodic boundary condition
+            // Message passing for sharing updated boundary point info
             apply_periodic_boundary(v_x);
             apply_periodic_boundary(v_y);
             apply_periodic_boundary(h);
@@ -243,10 +250,10 @@ int main(int argc, char** argv)
     }
 
     //sprintf(name, "assignment_1.csv.%d",int_t);
-    //write to file
-//    file.open(name, ios::out);
-//    dump_f(file, h);
-//    file.close();
+    //write to file ** Uncomment to push to file
+    //    file.open(name, ios::out);
+    //    dump_f(file, h);
+    //    file.close();
     wtime   = omp_get_wtime() - wtime;  // Record the end time and calculate elapsed time
     cout << "Simulation took total =" << wtime << "and" << wtime/N_t <<
         " seconds per time step with " << N_threads << " threads" << endl;
@@ -254,7 +261,9 @@ int main(int argc, char** argv)
     return 0;
 }
 
-
+/*
+ * Utility function to create an m x n 2D array allocated on contiguous memory
+ */
 double** create_2darray(int m, int n)
 {
     double** X = new double* [m];
@@ -269,6 +278,9 @@ double** create_2darray(int m, int n)
     return X;
 }
 
+/*
+ * Utility function to dump array values to file
+ */
 void dump_f(fstream &file, double** arr)
 {
     file << "x" << "," << "y" << "," << "h" << endl;
@@ -285,6 +297,9 @@ void dump_f(fstream &file, double** arr)
 
 }
 
+/*
+ * Utility functions to perform spatial discretization
+ */
 void f_vx(double** v_x, double** v_y, double** h, double** f)
 {
     // Sixth order finite stencil
@@ -292,7 +307,7 @@ void f_vx(double** v_x, double** v_y, double** h, double** f)
     for(int x=3; x<N_x+3; x++)
     {
         for(int y=3; y<N_y+3; y++)
-	    {
+      {
             f[x][y] = (-v_x[x][y]*((1.0/60.0)*v_x[x+3][y]-(1.0/60.0)*v_x[x-3][y]
                             -(3.0/20.0)*v_x[x+2][y]+(3.0/20.0)*v_x[x-2][y]
                             +(3.0/4.0)*v_x[x+1][y]-(3.0/4.0)*v_x[x-1][y])/(Delta_x)
@@ -308,6 +323,9 @@ void f_vx(double** v_x, double** v_y, double** h, double** f)
     }
 }
 
+/*
+ * Utility functions to perform spatial discretization
+ */
 void f_vy(double** v_x, double** v_y, double** h, double** f)
 {
     // Sixth order finite stencil
@@ -315,7 +333,7 @@ void f_vy(double** v_x, double** v_y, double** h, double** f)
     for(int x=3; x<N_x+3; x++)
     {
         for(int y=3; y<N_y+3; y++)
-	    {
+      {
             f[x][y] = (-v_x[x][y]*((1.0/60.0)*v_y[x+3][y]-(1.0/60.0)*v_y[x-3][y]
                             -(3.0/20.0)*v_y[x+2][y]+(3.0/20.0)*v_y[x-2][y]
                             +(3.0/4.0)*v_y[x+1][y]-(3.0/4.0)*v_y[x-1][y])/(Delta_x)
@@ -331,6 +349,9 @@ void f_vy(double** v_x, double** v_y, double** h, double** f)
     }
 }
 
+/*
+ * Utility functions to perform spatial discretization
+ */
 void f_h(double** v_x, double** v_y, double** h, double** f)
 {
     // Sixth order finite stencil
@@ -338,7 +359,7 @@ void f_h(double** v_x, double** v_y, double** h, double** f)
     for(int x=3; x<N_x+3; x++)
     {
         for(int y=3; y<N_y+3; y++)
-	    {
+      {
             f[x][y] = (-v_x[x][y]*((1.00/60.0)*h[x+3][y]-(1.0/60.0)*h[x-3][y]
                         -(3.0/20.0)*h[x+2][y]+(3.0/20.0)*h[x-2][y]
                         +(3.0/4.0)*h[x+1][y]-(3.0/4.0)*h[x-1][y])/(Delta_x)

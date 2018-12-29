@@ -27,13 +27,13 @@ const int Y                     = 1;
 const int numElementsPerBlock   = 1;
 
 // Simulation Parameters
-
 const double x_min = 0.0;
 const double x_max = 100.0;
 const double y_min = 0.0;
 const double y_max = 100.0;
 const double t_min = 0.0;
 const double t_max = 100.0;
+
 // Fixing the problem size per processor
 const int myN_x = 50;
 const int myN_y = 50;
@@ -46,7 +46,6 @@ const double Delta_t = 0.01;
 const int N_t = (t_max - t_min)/Delta_t + 1;
 
 // problem constants
-
 const double g = 9.81; // gravitational constant
 
 // Runge-kutta method functions
@@ -55,10 +54,10 @@ void f_vy(double** v_x, double** v_y, double** h, double** f);
 void f_h(double** v_x, double** v_y, double** h, double** f);
 
 // utility functions
-
 double** create_2darray(int m, int n);
 void dump_f(fstream &file, double** arr);
 void apply_periodic_boundary(double** arr);
+
 // Exchange the boundary grid-point values with neighbors
 void exchange(double** phi, int myN_x, int myN_y, int leftNeighbor, int rightNeighbor, int bottomNeighbor, int topNeighbor, MPI_Comm Comm2D, MPI_Status* status, MPI_Datatype strideType);
 
@@ -80,10 +79,10 @@ int main(int argc, char** argv)
     int dimensions[N_D]     = {N, N};
     int isPeriodic[N_D]     = {1,1};
     int myCoords[N_D]       = {0,0};
-    N_x			    = myN_x*dimensions[X]+1;
-    N_y			    = myN_y*dimensions[Y]+1;
-    Delta_x		    = (x_max-x_min)/(N_x-1);
-    Delta_y		    = (y_max-y_min)/(N_y-1);
+    N_x          = myN_x*dimensions[X]+1;
+    N_y          = myN_y*dimensions[Y]+1;
+    Delta_x        = (x_max-x_min)/(N_x-1);
+    Delta_y        = (y_max-y_min)/(N_y-1);
     int myiStart            = 0;
     int myiEnd              = 0;
     int myjStart            = 0;
@@ -112,6 +111,7 @@ int main(int argc, char** argv)
     int grid_nx = myN_x + 6;
     int grid_ny = myN_y + 6;
 
+    // Declare variables of shallow water equations
     double** h      = create_2darray(grid_nx,grid_ny);
     double** v_x    = create_2darray(grid_nx,grid_ny);
     double** v_y    = create_2darray(grid_nx,grid_ny);
@@ -120,6 +120,7 @@ int main(int argc, char** argv)
     double** v_x_t  = create_2darray(grid_nx,grid_ny);
     double** v_y_t  = create_2darray(grid_nx,grid_ny);
 
+    //Declare variables for RK4 method
     double** k1_vx  = create_2darray(grid_nx,grid_ny);
     double** k2_vx  = create_2darray(grid_nx,grid_ny);
     double** k3_vx  = create_2darray(grid_nx,grid_ny);
@@ -169,20 +170,18 @@ int main(int argc, char** argv)
 
 
     // Runge-Kutta time marching loop
-
     double time = 0.00;
     char name[30];
     for(l=0; l<N_t; l++)
     {
 
         int int_t = (int)(time/Delta_t);
-
+        //write to file ** Uncomment to push to file
         //sprintf(name, "assignment_1.csv.%d_%d_%d",int_t, myCoords[X], myCoords[Y]);
-
-        //write to file
         //file.open(name, ios::out);
         //dump_f(file, h);
 
+        // Message passing for sharing boundary point info
         exchange(v_x, myN_x, myN_y, leftNeighbor, rightNeighbor, bottomNeighbor,
                 topNeighbor, Comm2D, &status, strideType);
         exchange(v_y, myN_x, myN_y, leftNeighbor, rightNeighbor, bottomNeighbor,
@@ -190,10 +189,10 @@ int main(int argc, char** argv)
         exchange(h, myN_x, myN_y, leftNeighbor, rightNeighbor, bottomNeighbor,
                 topNeighbor, Comm2D, &status, strideType);
 
+        // Calculate k1 values
         f_vx(v_x,v_y,h,k1_vx);
         f_vy(v_x,v_y,h,k1_vy);
         f_h(v_x,v_y,h,k1_h);
-
 
         for(int x=3; x<myN_x+3; x++)
         {
@@ -205,6 +204,7 @@ int main(int argc, char** argv)
             }
         }
 
+        // Message passing for sharing updated boundary point info
         exchange(v_x_t, myN_x, myN_y, leftNeighbor, rightNeighbor, bottomNeighbor,
                 topNeighbor, Comm2D, &status, strideType);
         exchange(v_y_t, myN_x, myN_y, leftNeighbor, rightNeighbor, bottomNeighbor,
@@ -212,6 +212,7 @@ int main(int argc, char** argv)
         exchange(h_t, myN_x, myN_y, leftNeighbor, rightNeighbor, bottomNeighbor,
                 topNeighbor, Comm2D, &status, strideType);
 
+        // Calculate k2 values
         f_vx(v_x_t,v_y_t,h_t,k2_vx);
         f_vy(v_x_t,v_y_t,h_t,k2_vy);
         f_h(v_x_t,v_y_t,h_t,k2_h);
@@ -226,6 +227,7 @@ int main(int argc, char** argv)
             }
         }
 
+        // Message passing for sharing updated boundary point info
         exchange(v_x_t, myN_x, myN_y, leftNeighbor, rightNeighbor, bottomNeighbor,
                 topNeighbor, Comm2D, &status, strideType);
         exchange(v_y_t, myN_x, myN_y, leftNeighbor, rightNeighbor, bottomNeighbor,
@@ -233,6 +235,7 @@ int main(int argc, char** argv)
         exchange(h_t, myN_x, myN_y, leftNeighbor, rightNeighbor, bottomNeighbor,
                 topNeighbor, Comm2D, &status, strideType);
 
+        // Calculate k3 values
         f_vx(v_x_t,v_y_t,h_t, k3_vx);
         f_vy(v_x_t,v_y_t,h_t, k3_vy);
         f_h(v_x_t,v_y_t,h_t, k3_h);
@@ -247,6 +250,7 @@ int main(int argc, char** argv)
             }
         }
 
+        // Message passing for sharing updated boundary point info
         exchange(v_x_t, myN_x, myN_y, leftNeighbor, rightNeighbor, bottomNeighbor,
                 topNeighbor, Comm2D, &status, strideType);
         exchange(v_y_t, myN_x, myN_y, leftNeighbor, rightNeighbor, bottomNeighbor,
@@ -254,10 +258,12 @@ int main(int argc, char** argv)
         exchange(h_t, myN_x, myN_y, leftNeighbor, rightNeighbor, bottomNeighbor,
                 topNeighbor, Comm2D, &status, strideType);
 
+        // Calculate k4 values
         f_vx(v_x_t,v_y_t,h_t, k4_vx);
         f_vy(v_x_t,v_y_t,h_t, k4_vy);
         f_h(v_x_t,v_y_t,h_t, k4_h);
 
+        //RK4
         for(int x=3; x<myN_x+3; x++)
         {
             for(int y=3; y<myN_y+3; y++)
@@ -270,22 +276,15 @@ int main(int argc, char** argv)
                                                   +k3_h[x][y]/3+k4_h[x][y]/6);
             }
         }
-	//write to file
         time=time+Delta_t;
-//	if(int_t%(int)(1/Delta_t)==0)
-//	{
-//           sprintf(myFileName, "assignment1_Process_%d_%d_%d.data",int_t, myCoords[X], myCoords[Y]);
-//            file.open(myFileName, ios::out);
-//            for(i=3; i<myN_x+3; i++)
-//            {
-//                for(j=3; j<myN_y+3; j++)
-//                {
-//                    file << h[i][j] << "\t";
-//                }
-//                file << endl;
-//            }
-//           file.close();
-//	}
+    //write to file  ** Uncomment to push to file
+    //  if(int_t%(int)(1/Delta_t)==0)
+    //  {
+    //      sprintf(myFileName, "assignment1_Process_%d_%d_%d.data",int_t, myCoords[X], myCoords[Y]);
+    //      file.open(myFileName, ios::out);
+    //      dump_f(file, h);
+    //      file.close();
+    //  }
     }
 
 
@@ -306,10 +305,11 @@ int main(int argc, char** argv)
     MPI_Finalize();
 
     return 0;
-
 }
 
-
+/*
+ * Utility function to create an m x n 2D array allocated on contiguous memory
+ */
 double** create_2darray(int m, int n)
 {
     double** X = new double* [m];
@@ -324,6 +324,9 @@ double** create_2darray(int m, int n)
     return X;
 }
 
+/*
+ * Utility function to dump array values to file
+ */
 void dump_f(fstream &file, double** arr)
 {
     file << "x" << "," << "y" << "," << "h" << endl;
@@ -340,13 +343,16 @@ void dump_f(fstream &file, double** arr)
 
 }
 
+/*
+ * Utility functions to perform spatial discretization
+ */
 void f_vx(double** v_x, double** v_y, double** h, double** f)
 {
     // Sixth order finite stencil
     for(int x=3; x<myN_x+3; x++)
     {
         for(int y=3; y<myN_y+3; y++)
-	    {
+      {
             f[x][y] = (-v_x[x][y]*((1.0/60.0)*v_x[x+3][y]-(1.0/60.0)*v_x[x-3][y]
                             -(3.0/20.0)*v_x[x+2][y]+(3.0/20.0)*v_x[x-2][y]
                             +(3.0/4.0)*v_x[x+1][y]-(3.0/4.0)*v_x[x-1][y])/(Delta_x)
@@ -362,13 +368,16 @@ void f_vx(double** v_x, double** v_y, double** h, double** f)
     }
 }
 
+/*
+ * Utility functions to perform spatial discretization
+ */
 void f_vy(double** v_x, double** v_y, double** h, double** f)
 {
     // Sixth order finite stencil
     for(int x=3; x<myN_x+3; x++)
     {
         for(int y=3; y<myN_y+3; y++)
-	    {
+      {
             f[x][y] = (-v_x[x][y]*((1.0/60.0)*v_y[x+3][y]-(1.0/60.0)*v_y[x-3][y]
                             -(3.0/20.0)*v_y[x+2][y]+(3.0/20.0)*v_y[x-2][y]
                             +(3.0/4.0)*v_y[x+1][y]-(3.0/4.0)*v_y[x-1][y])/(Delta_x)
@@ -384,13 +393,16 @@ void f_vy(double** v_x, double** v_y, double** h, double** f)
     }
 }
 
+/*
+ * Utility functions to perform spatial discretization
+ */
 void f_h(double** v_x, double** v_y, double** h, double** f)
 {
     // Sixth order finite stencil
     for(int x=3; x<myN_x+3; x++)
     {
         for(int y=3; y<myN_y+3; y++)
-	    {
+      {
             f[x][y] = (-v_x[x][y]*((1.00/60.0)*h[x+3][y]-(1.0/60.0)*h[x-3][y]
                         -(3.0/20.0)*h[x+2][y]+(3.0/20.0)*h[x-2][y]
                         +(3.0/4.0)*h[x+1][y]-(3.0/4.0)*h[x-1][y])/(Delta_x)
@@ -438,7 +450,9 @@ void apply_periodic_boundary(double** arr)
      }
 }
 
-// Message exchange function for each of the process to share necessary information with neighboring processes.
+/*
+ * Message exchange function for each of the process to share necessary information with neighboring processes.
+ */
 void exchange(double** phi, int myN_x, int myN_y, int leftNeighbor, int rightNeighbor, int bottomNeighbor, int topNeighbor, MPI_Comm Comm2D, MPI_Status* status, MPI_Datatype strideType)
 {
 

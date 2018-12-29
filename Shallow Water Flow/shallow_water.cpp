@@ -63,14 +63,16 @@ int main(int argc, char** argv)
     int grid_nx = N_x + 6;
     int grid_ny = N_y + 6;
 
+    // Declare variables of shallow water equations
     double** h      = create_2darray(grid_nx,grid_ny);
     double** v_x    = create_2darray(grid_nx,grid_ny);
     double** v_y    = create_2darray(grid_nx,grid_ny);
-    
+
     double** h_t    = create_2darray(grid_nx,grid_ny);
     double** v_x_t  = create_2darray(grid_nx,grid_ny);
     double** v_y_t  = create_2darray(grid_nx,grid_ny);
 
+    //Declare variables for RK4 method
     double** k1_vx  = create_2darray(grid_nx,grid_ny);
     double** k2_vx  = create_2darray(grid_nx,grid_ny);
     double** k3_vx  = create_2darray(grid_nx,grid_ny);
@@ -101,10 +103,10 @@ int main(int argc, char** argv)
     {
         h[x][2]=h[x][end-4];
         h[x][end-3]=h[x][3];
-            
+
         h[x][1]=h[x][end-5];
         h[x][end-2]=h[x][4];
-           
+
         h[x][0]=h[x][end-6];
         h[x][end-1]=h[x][5];
     }
@@ -114,10 +116,10 @@ int main(int argc, char** argv)
     {
         h[2][y]          =   h[end-4][y];
         h[end-3][y]      =   h[3][y];
-         
+
         h[1][y]          =   h[end-5][y];
         h[end-2][y]      =   h[4][y];
-            
+
         h[0][y]          =   h[end-6][y];
         h[end-1][y]      =   h[5][y];
     }
@@ -138,6 +140,7 @@ int main(int argc, char** argv)
             dump_f(file, h);
         }
 
+        // Calculate k1 values
         f_vx(v_x,v_y,h,k1_vx);
         f_vy(v_x,v_y,h,k1_vy);
         f_h(v_x,v_y,h,k1_h);
@@ -161,14 +164,12 @@ int main(int argc, char** argv)
                 h_t[x][y]     = h[x][y]     +   0.5*Delta_t*k1_h[x][y];
             }
         }
-
-
-
-
+        // Message passing for sharing updated boundary point info
         apply_periodic_boundary(v_x_t);
         apply_periodic_boundary(v_y_t);
         apply_periodic_boundary(h_t);
 
+        // Calculate k2 values
         f_vx(v_x_t,v_y_t,h_t,k2_vx);
         f_vy(v_x_t,v_y_t,h_t,k2_vy);
         f_h(v_x_t,v_y_t,h_t,k2_h);
@@ -182,14 +183,16 @@ int main(int argc, char** argv)
                 h_t[x][y]    =   h[x][y]    +   0.5*Delta_t*k2_h[x][y];
             }
         }
+        // Message passing for sharing updated boundary point info
         apply_periodic_boundary(v_x_t);
         apply_periodic_boundary(v_y_t);
         apply_periodic_boundary(h_t);
 
+        // Calculate k3 values
         f_vx(v_x_t,v_y_t,h_t, k3_vx);
         f_vy(v_x_t,v_y_t,h_t, k3_vy);
         f_h(v_x_t,v_y_t,h_t, k3_h);
-        
+
         for(int x=3; x<N_x+3; x++)
         {
             for(int y=3; y<N_y+3; y++)
@@ -199,14 +202,17 @@ int main(int argc, char** argv)
                 h_t[x][y]    =   h[x][y]+Delta_t*k3_h[x][y];
             }
         }
+        // Message passing for sharing updated boundary point info
         apply_periodic_boundary(v_x_t);
         apply_periodic_boundary(v_y_t);
         apply_periodic_boundary(h_t);
 
+        // Calculate k4 values
         f_vx(v_x_t,v_y_t,h_t, k4_vx);
         f_vy(v_x_t,v_y_t,h_t, k4_vy);
         f_h(v_x_t,v_y_t,h_t, k4_h);
-        
+
+        //RK4
         for(int x=3; x<N_x+3; x++)
         {
             for(int y=3; y<N_y+3; y++)
@@ -219,8 +225,7 @@ int main(int argc, char** argv)
                                                   +k3_h[x][y]/3+k4_h[x][y]/6);
             }
         }
-
-        // set up the periodic boundary condition
+        // Message passing for sharing updated boundary point info
         apply_periodic_boundary(v_x);
         apply_periodic_boundary(v_y);
         apply_periodic_boundary(h);
@@ -228,7 +233,7 @@ int main(int argc, char** argv)
         file.close();
 
     }
-    
+
     int int_t = (int)(time/Delta_t);
     sprintf(name, "assignment_1.csv.%d",int_t);
     //write to file
@@ -240,7 +245,9 @@ int main(int argc, char** argv)
 
 }
 
-
+/*
+ * Utility function to create an m x n 2D array allocated on contiguous memory
+ */
 double** create_2darray(int m, int n)
 {
     double** X = new double* [m];
@@ -255,22 +262,28 @@ double** create_2darray(int m, int n)
     return X;
 }
 
+/*
+ * Utility function to dump array values to file
+ */
 void dump_f(fstream &file, double** arr)
 {
     file << "x" << "," << "y" << "," << "h" << endl;
-    
+
     for(int i=0; i<N_x+6; i++)
     {
         for(int j=0; j<N_y+6; j++)
         {
-           file << x_min+(i-3)*Delta_x << "," 
-               << y_min+(j-3)*Delta_y << "," 
+           file << x_min+(i-3)*Delta_x << ","
+               << y_min+(j-3)*Delta_y << ","
                << arr[i][j]  << endl;
         }
     }
 
 }
 
+/*
+ * Utility functions to perform spatial discretization
+ */
 void f_vx(double** v_x, double** v_y, double** h, double** f)
 {
     // Sixth order finite stencil
@@ -283,7 +296,7 @@ void f_vx(double** v_x, double** v_y, double** h, double** f)
                             +(3.0/4.0)*v_x[x+1][y]-(3.0/4.0)*v_x[x-1][y])/(Delta_x)
                  -v_y[x][y]*((1.0/60.0)*v_x[x][y+3]-(1.0/60.0)*v_x[x][y-3]
                             -(3.0/20.0)*v_x[x][y+2]+(3.0/20.0)*v_x[x][y-2]
-                            +(3.0/4.0)*v_x[x][y+1]-(3.0/4.0)*v_x[x][y-1])/(Delta_y)) 
+                            +(3.0/4.0)*v_x[x][y+1]-(3.0/4.0)*v_x[x][y-1])/(Delta_y))
                         -g*((1.0/60.0)*h[x+3][y]-(1.0/60.0)*h[x-3][y]
                             -(3.0/20.0)*h[x+2][y]+(3.0/20.0)*h[x-2][y]
                             +(3.0/4.0)*h[x+1][y]-(3.0/4.0)*h[x-1][y])/(Delta_x);
@@ -293,6 +306,9 @@ void f_vx(double** v_x, double** v_y, double** h, double** f)
     }
 }
 
+/*
+ * Utility functions to perform spatial discretization
+ */
 void f_vy(double** v_x, double** v_y, double** h, double** f)
 {
     // Sixth order finite stencil
@@ -315,6 +331,9 @@ void f_vy(double** v_x, double** v_y, double** h, double** f)
     }
 }
 
+/*
+ * Utility functions to perform spatial discretization
+ */
 void f_h(double** v_x, double** v_y, double** h, double** f)
 {
     // Sixth order finite stencil
@@ -347,10 +366,10 @@ void apply_periodic_boundary(double** arr)
     {
         arr[x][2]=arr[x][end-4];
         arr[x][end-3]=arr[x][3];
-            
+
         arr[x][1]=arr[x][end-5];
         arr[x][end-2]=arr[x][4];
-            
+
         arr[x][0]=arr[x][end-6];
         arr[x][end-1]=arr[x][5];
     }
@@ -360,10 +379,10 @@ void apply_periodic_boundary(double** arr)
     {
         arr[2][y]       =   arr[end-4][y];
         arr[end-3][y]   =   arr[3][y];
-        
+
         arr[1][y]       =   arr[end-5][y];
         arr[end-2][y]   =   arr[4][y];
-        
+
         arr[0][y]       =   arr[end-6][y];
         arr[end-1][y]   =   arr[5][y];
      }
