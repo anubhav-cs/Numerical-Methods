@@ -1,6 +1,6 @@
 # NUMERICAL METHODS : Solving Ordinary and Partial Differential Equations#
 
-This repository contains solution to partial differential equations, corresponding to he following two problems in the domain of mechanics.
+This repository contains solution to partial differential equations, corresponding to the following two problems in the domain of mechanics.
 
 # 1.  Modeling of shallow-water flow, using shallow-water equations. #
 
