@@ -1,3 +1,5 @@
+**REPORT**: [link](https://github.com/anubhav-cs/Numerical-Methods/blob/master/Temperature%20variation%20in%20a%20Heat%20Sink/TheHeatEquation_HeatSink.pdf)
+
 # Measuring Temperature variation as a function of time in a 3D heat sink. #
 
 * The Heat Equation:
