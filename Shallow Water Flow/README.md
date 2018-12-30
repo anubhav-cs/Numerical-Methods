@@ -16,13 +16,13 @@ The resulting instruction set had code blocks which were embarrassingly parallel
 The parallelized code was run on supercomputer with Intel(R) Xeon® CPU E5-2680 0 @ 2.70GHz chips. Strong and weak scaling results were analyzed.
 
 ![Shallow water elevation 1](https://github.com/anubhav-cs/Numerical-Methods/blob/master/Shallow%20Water%20Flow/images/cpp1.png)
-Shallow water elevation at T = 5 seconds
+*Shallow water elevation at T = 5 seconds*
 
 ![Shallow water elevation 2](https://github.com/anubhav-cs/Numerical-Methods/blob/master/Shallow%20Water%20Flow/images/cpp2.png)
-Shallow water elevation at T = 25 seconds
+*Shallow water elevation at T = 25 seconds*
 
 ![Shallow water elevation 3](https://github.com/anubhav-cs/Numerical-Methods/blob/master/Shallow%20Water%20Flow/images/cpp3.png)
-Shallow water elevation at T = 40 seconds
+*Shallow water elevation at T = 40 seconds*
 
 ![Strong scaling](https://github.com/anubhav-cs/Numerical-Methods/blob/master/Shallow%20Water%20Flow/images/StrongScale.png)
 
