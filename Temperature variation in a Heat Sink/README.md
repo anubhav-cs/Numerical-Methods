@@ -16,7 +16,7 @@
 
 * The *quest* for **parallelization**:
 
-  OpenCL parallization
+  OpenCL Implementation:-
   The OpenCL library was used to develop parallel code for two problems, ‘daxpy’ (**Y =**a**X+ Y**) and ‘inner product’ (**Y = X<sup>T</sup> X**) . This could be used in the conjugate gradient method where there are few calculations which are performed at every time-step to solve the system of PDE, **A φ<sup>l+1</sup> = b** , which can be parallelized with above code.
   The following equation represent the values which are calculated at each time-step in conjugate gradient method.
 
