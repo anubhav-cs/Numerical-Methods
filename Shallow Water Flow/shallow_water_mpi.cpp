@@ -20,7 +20,6 @@
 using namespace std;
 
 // MPI Global Settings
-
 const int N_D                   = 2;
 const int X                     = 0;
 const int Y                     = 1;
