@@ -2,7 +2,7 @@
 //
 // Applied High Perfomance Computing
 //
-// Problem :	Computing a inner Product with OpenCL
+// Problem :  Computing a inner Product with OpenCL
 //
 // Author  :  Anubhav Singh
 //
@@ -160,7 +160,7 @@ int main(int argc, char** argv)
     cout << "The inner product on the is " << aInner << ". Computation took " << wtime << " seconds on the " << deviceName << endl;
 
 
-	return 0;
+  return 0;
 }
 
 void initialize(cl_platform_id& platformID, cl_device_id& deviceID, cl_context& context, cl_command_queue& commandQueue, cl_program& program, cl_kernel& innerProduct, int D)

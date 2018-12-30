@@ -2,14 +2,14 @@
 //
 // Applied Numerical Methods
 //
-// Problem:		rho.C.dT/dt = k. Grad^2 T
+// Problem:       rho.C.dT/dt = k. Grad^2 T
 //
-// Method:      Finite Element Method with 3D tetrahedral elements and
-//              Implicit Euler Method and Conjugate Gradient Method
+// Method:        Finite Element Method with 3D tetrahedral elements,
+//                Implicit Euler Method and Conjugate Gradient Method
 //
-// Compilation:	g++ assignment2.cpp -o assignment
+// Compilation:   g++ assignment2.cpp -o assignment
 //
-// Author : Anubhav Singh
+// Author :       Anubhav Singh
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -22,7 +22,7 @@
 using namespace std;
 
 // Class definitions
-class	SparseMatrix
+class  SparseMatrix
 {
 public:
     SparseMatrix(int nrow, int nnzperrow)
@@ -34,32 +34,32 @@ public:
     SparseMatrix()
     {
         // This constructor is called if we have no useful information
-        N_row_			= 0;
-        N_nz_			= 0;
-        N_nz_rowmax_	= 0;
-        N_allocated_	= 0;
-        val_			= NULL;
-        col_			= NULL;
-        row_			= NULL;
-        nnzs_			= NULL;
+        N_row_      = 0;
+        N_nz_      = 0;
+        N_nz_rowmax_  = 0;
+        N_allocated_  = 0;
+        val_      = NULL;
+        col_      = NULL;
+        row_      = NULL;
+        nnzs_      = NULL;
     }
    ~SparseMatrix()
     {
-        if(val_)	delete	[] val_;
-        if(col_)	delete	[] col_;
-        if(row_)	delete	[] row_;
-        if(nnzs_)	delete	[] nnzs_;
+        if(val_)  delete  [] val_;
+        if(col_)  delete  [] col_;
+        if(row_)  delete  [] row_;
+        if(nnzs_)  delete  [] nnzs_;
     }
-    void	initialize(int nrow, int nnzperrow)
+    void  initialize(int nrow, int nnzperrow)
     {
-        N_row_			= nrow;
-        N_nz_			= 0;
-        N_nz_rowmax_	= nnzperrow;
-        N_allocated_	= N_row_*N_nz_rowmax_;
-        val_			= new double	[N_allocated_];
-        col_			= new int		[N_allocated_];
-        row_			= new int		[N_row_+1];
-        nnzs_			= new int		[N_row_+1];
+        N_row_      = nrow;
+        N_nz_      = 0;
+        N_nz_rowmax_  = nnzperrow;
+        N_allocated_  = N_row_*N_nz_rowmax_;
+        val_      = new double  [N_allocated_];
+        col_      = new int    [N_allocated_];
+        row_      = new int    [N_row_+1];
+        nnzs_      = new int    [N_row_+1];
 
         memset(val_,  0, N_allocated_ *sizeof(double));
         memset(row_,  0, (N_row_+1)   *sizeof(int));
@@ -77,11 +77,11 @@ public:
 
         return;
     }
-    void	finalize()
+    void  finalize()
     {
-        int minCol		= 0;
-        int insertPos	= 0;
-        int	index		= 0;
+        int minCol    = 0;
+        int insertPos  = 0;
+        int  index    = 0;
 
         // Now that the matrix is assembled we can set N_nz_rowmax_ explicitly by
         // taking the largest value in the nnzs_ array
@@ -91,10 +91,10 @@ public:
             N_nz_rowmax_ = max(N_nz_rowmax_, nnzs_[m]);
         }
 
-        double* tempVal		= new double [N_nz_];
-        int*	tempCol		= new int	 [N_nz_];
-        int*	tempRow		= new int	 [N_row_+1];
-        bool*	isSorted	= new bool	 [N_allocated_]; // This array will help us sort the column indices
+        double* tempVal    = new double [N_nz_];
+        int*  tempCol    = new int   [N_nz_];
+        int*  tempRow    = new int   [N_row_+1];
+        bool*  isSorted  = new bool   [N_allocated_]; // This array will help us sort the column indices
 
         memset(tempVal,  0, N_nz_       *sizeof(double));
         memset(tempCol,  0, N_nz_       *sizeof(int));
@@ -105,18 +105,18 @@ public:
         {
             for(int k=row_[m]; k<(row_[m]+nnzs_[m]); k++)
             {
-                minCol	= N_row_+1;
+                minCol  = N_row_+1;
                 for(int kk=row_[m]; kk<(row_[m]+nnzs_[m]); kk++)
                 {
                     if(!isSorted[kk] && col_[kk]<minCol)
                     {
-                        index		= kk;
-                        minCol		= col_[index];
+                        index    = kk;
+                        minCol    = col_[index];
                     }
                 }
-                tempVal[insertPos]	= val_[index];
-                tempCol[insertPos]	= col_[index];
-                isSorted[index]		= true;
+                tempVal[insertPos]  = val_[index];
+                tempCol[insertPos]  = col_[index];
+                isSorted[index]    = true;
                 insertPos++;
             }
             tempRow[m+1] = tempRow[m]+nnzs_[m];
@@ -128,11 +128,11 @@ public:
         delete [] nnzs_;
         delete [] isSorted;
 
-        val_		= tempVal;
-        col_		= tempCol;
-        row_		= tempRow;
-        nnzs_		= NULL;
-        N_allocated_	= N_nz_;
+        val_    = tempVal;
+        col_    = tempCol;
+        row_    = tempRow;
+        nnzs_    = NULL;
+        N_allocated_  = N_nz_;
 
         return;
     }
@@ -146,8 +146,8 @@ public:
             this->reallocate();
         }
         // Search between row(m) and row(m+1) for col(k) = n (i.e. is the entry already in the matrix)
-        int		k			= row_[m];
-        bool	foundEntry	= false;
+        int    k      = row_[m];
+        bool  foundEntry  = false;
         while(k<(row_[m]+nnzs_[m]) && !foundEntry)
         {
             if(col_[k]==n)
@@ -166,36 +166,36 @@ public:
         {
             N_nz_++;
             nnzs_[m]++;
-            col_[k]	= n;
+            col_[k]  = n;
             return val_[k];
         }
     }
     inline
-    double&	operator()(int k)
+    double&  operator()(int k)
     {
         return val_[k];
     }
-    void	operator= (const SparseMatrix& A)
+    void  operator= (const SparseMatrix& A)
     {
-        if(val_)	delete	[] val_;
-        if(col_)	delete	[] col_;
-        if(row_)	delete	[] row_;
-        if(nnzs_)	delete	[] nnzs_;
+        if(val_)  delete  [] val_;
+        if(col_)  delete  [] col_;
+        if(row_)  delete  [] row_;
+        if(nnzs_)  delete  [] nnzs_;
 
-        N_row_			= A.N_row_;
-        N_nz_			= A.N_nz_;
-        N_nz_rowmax_	= A.N_nz_rowmax_;
-        N_allocated_	= A.N_allocated_;
-        val_			= new double [N_allocated_];
-        col_			= new int    [N_allocated_];
-        row_			= new int    [N_row_+1];
+        N_row_      = A.N_row_;
+        N_nz_      = A.N_nz_;
+        N_nz_rowmax_  = A.N_nz_rowmax_;
+        N_allocated_  = A.N_allocated_;
+        val_      = new double [N_allocated_];
+        col_      = new int    [N_allocated_];
+        row_      = new int    [N_row_+1];
 
-        memcpy(val_, A.val_, N_nz_	   *sizeof(double));
-        memcpy(col_, A.col_, N_nz_	   *sizeof(int));
+        memcpy(val_, A.val_, N_nz_     *sizeof(double));
+        memcpy(col_, A.col_, N_nz_     *sizeof(int));
         memcpy(row_, A.row_, (N_row_+1)*sizeof(int));
     }
     inline
-    void	multiply(double* u, double* v)
+    void  multiply(double* u, double* v)
     {
         // Note: This function will perform a matrix vector multiplication with the input vector v, returning the output in u.
         for(int m=0; m<N_row_; m++)
@@ -209,7 +209,7 @@ public:
         return;
     }
     inline
-    void	multiply(double* u, double* v, bool* includerows, bool* includecols)
+    void  multiply(double* u, double* v, bool* includerows, bool* includecols)
     {
         // Note: This function will perform a matrix vector multiplication on part of the matrix
         for(int m=0; m<N_row_; m++)
@@ -230,7 +230,7 @@ public:
         return;
     }
     inline
-    void	subtract(double u, SparseMatrix& A)
+    void  subtract(double u, SparseMatrix& A)
     {
         for(int k=0; k<N_nz_; k++)
         {
@@ -239,16 +239,16 @@ public:
         return;
     }
     inline
-    int		getNnz()
+    int    getNnz()
     {
         return N_nz_;
     }
     inline
-    int		getNrow()
+    int    getNrow()
     {
         return N_row_;
     }
-    void	print(const char* name)
+    void  print(const char* name)
     {
         fstream matrix;
         cout << "Matrix " << name << " has " << N_row_ << " rows with " << N_nz_ << " non-zero entries - " << N_allocated_ << " allocated." << flush;
@@ -267,7 +267,7 @@ public:
         return;
     }
 protected:
-    void	reallocate()
+    void  reallocate()
     {
         // Double the memory allocation size
         N_nz_rowmax_ *= 2;
@@ -276,7 +276,7 @@ protected:
 
         // Create some temporary arrays of the new size
         double* tempVal = new double [N_allocated_];
-        int*	tempCol = new int    [N_allocated_];
+        int*  tempCol = new int    [N_allocated_];
 
         memset(tempVal, 0, N_allocated_*sizeof(double));
         memset(tempCol, 0, N_allocated_*sizeof(int));
@@ -293,23 +293,23 @@ protected:
         delete [] col_;
 
         // Assign the addresses of the new arrays
-        val_	= tempVal;
-        col_	= tempCol;
+        val_  = tempVal;
+        col_  = tempCol;
 
         return;
     }
 private:
-    double*	val_;			// [N_nz]    Stores the nonzero elements of the matrix
-    int*	col_;			// [N_nz]    Stores the column indices of the elements in each row
-    int*	row_;			// [N_row+1] Stores the locations in val that start a row
-    int*	nnzs_;			// [N_row+1] Stores the number of nonzero entries per row during the assembly process
-    int		N_row_;			// The number of rows in the matrix
-    int		N_nz_;			// The number of non-zero entries currently stored in the matrix
-    int		N_nz_rowmax_;	// The maximum number of non-zero entries per row. This will be an estimate until the matrix is assembled
-    int		N_allocated_;	// The number of non-zero entries currently allocated for in val_ and col_
+    double*  val_;      // [N_nz]    Stores the nonzero elements of the matrix
+    int*  col_;      // [N_nz]    Stores the column indices of the elements in each row
+    int*  row_;      // [N_row+1] Stores the locations in val that start a row
+    int*  nnzs_;      // [N_row+1] Stores the number of nonzero entries per row during the assembly process
+    int    N_row_;      // The number of rows in the matrix
+    int    N_nz_;      // The number of non-zero entries currently stored in the matrix
+    int    N_nz_rowmax_;  // The maximum number of non-zero entries per row. This will be an estimate until the matrix is assembled
+    int    N_allocated_;  // The number of non-zero entries currently allocated for in val_ and col_
 };
 
-class	Boundary
+class  Boundary
 {
 public:
     Boundary()
@@ -318,29 +318,29 @@ public:
     }
     string  name_;
     string  type_;
-    int		N_;
+    int    N_;
     int*    indices_;
-    double	value_;
+    double  value_;
 };
 
 // Global variables
-const double	t_min       = 0.00;
-const double	t_max       = 200.00;
+const double  t_min       = 0.00;
+const double  t_max       = 200.00;
 const double    Delta_t     = 0.1;
-const double	rho         = 8954.00;
-const double	C           = 380.00;
+const double  rho         = 8954.00;
+const double  C           = 380.00;
 const double    k           = 286.00;
 const double    q_base      = 10000.00;
 const double    h           = 100.00;
 const double    T_air       = 300;
-const int		N_t         = static_cast<int> ((t_max-t_min)/Delta_t+1);
+const int    N_t         = static_cast<int> ((t_max-t_min)/Delta_t+1);
 
 // Function declarations
-void	read(char* filename, double**& Points, int**& Faces, int**& Elements, Boundary*& Boundaries, int& N_p, int& N_f, int& N_e, int& N_b);
-void	write(fstream& file, double* phi, int N_p);
-void	write(double* phi, double**& Points, int**& Elements, int& myN_p, int& myN_e, int l);
-void	assemble(SparseMatrix& M, SparseMatrix& K, double* s, double* phi, bool* Free, bool* Fixed, double** Points, int** Faces, int** Elements, Boundary* Boundaries, int N_p, int N_f, int N_e, int N_b);
-void	solve(SparseMatrix& A, double* phi, double* b, bool* Free, bool* Fixed);
+void  read(char* filename, double**& Points, int**& Faces, int**& Elements, Boundary*& Boundaries, int& N_p, int& N_f, int& N_e, int& N_b);
+void  write(fstream& file, double* phi, int N_p);
+void  write(double* phi, double**& Points, int**& Elements, int& myN_p, int& myN_e, int l);
+void  assemble(SparseMatrix& M, SparseMatrix& K, double* s, double* phi, bool* Free, bool* Fixed, double** Points, int** Faces, int** Elements, Boundary* Boundaries, int N_p, int N_f, int N_e, int N_b);
+void  solve(SparseMatrix& A, double* phi, double* b, bool* Free, bool* Fixed);
 void    get_matrix_cofactor(int m, int n, int c, double matrix[][4], double co_mat[][4] ); // 4-D Matrix Cofactor
 double  get_determinant(int dimension, double matrix[][4]) ; // 4-D Matrix Det
 
@@ -371,18 +371,18 @@ int     main(int argc, char** argv)
     double*         phi         = new double [N_p];
     double*         s           = new double [N_p];
     double*         b           = new double [N_p];
-    bool*           Free        = new bool	 [N_p];
-    bool*           Fixed       = new bool	 [N_p];
-    double*         AphiFixed	= new double [N_p];
+    bool*           Free        = new bool   [N_p];
+    bool*           Fixed       = new bool   [N_p];
+    double*         AphiFixed  = new double [N_p];
     SparseMatrix    M;
     SparseMatrix    K;
     SparseMatrix    A;
 
     // Set initial condition
-    t			= t_min;
+    t      = t_min;
     for(int m=0; m<N_p; m++)
     {
-        phi[m]	= 300;
+        phi[m]  = 300;
     }
 
     assemble(M, K, s, phi, Free, Fixed, Points, Faces, Elements, Boundaries, N_p, N_f, N_e, N_b);
@@ -400,14 +400,14 @@ int     main(int argc, char** argv)
     // Time marching loop
     for(int l=0; l<N_t; l++)
     {
-        t	+= Delta_t;
+        t  += Delta_t;
         cout << "t = " << t;
 
         // Assemble b
         M.multiply(b, phi);
         for(int m=0; m<N_p; m++)
         {
-            b[m]	+= Delta_t*s[m] - AphiFixed[m];
+            b[m]  += Delta_t*s[m] - AphiFixed[m];
         }
 
         // Solve the linear system
@@ -415,7 +415,7 @@ int     main(int argc, char** argv)
 
         // Write the solution
         if(l%(int)(1/Delta_t)==0)
-		{
+    {
             write(phi, Points, Elements, N_p, N_e, l/(int)(1/Delta_t));
         }
     }
@@ -444,9 +444,9 @@ int     main(int argc, char** argv)
     return 0;
 }
 
-void	read(char* filename, double**& Points, int**& Faces, int**& Elements, Boundary*& Boundaries, int& N_p, int& N_f, int& N_e, int& N_b)
+void  read(char* filename, double**& Points, int**& Faces, int**& Elements, Boundary*& Boundaries, int& N_p, int& N_f, int& N_e, int& N_b)
 {
-    fstream		file;
+    fstream    file;
     string      temp;
 
     cout << "Reading " << filename << "... " << flush;
@@ -463,10 +463,10 @@ void	read(char* filename, double**& Points, int**& Faces, int**& Elements, Bound
     file >> temp >> N_e;
     file >> temp >> N_b;
 
-    Points			= new double*	[N_p];
-    Faces			= new int*		[N_f];
-    Elements		= new int*		[N_e];
-    Boundaries		= new Boundary  [N_b];
+    Points      = new double*  [N_p];
+    Faces      = new int*    [N_f];
+    Elements    = new int*    [N_e];
+    Boundaries    = new Boundary  [N_b];
     Points[0]       = new double    [N_p*3];
     Faces[0]        = new int       [N_f*3];
     Elements[0]     = new int       [N_e*4];
@@ -520,7 +520,7 @@ void	read(char* filename, double**& Points, int**& Faces, int**& Elements, Bound
     return;
 }
 
-void	write(fstream& file, double* phi, int N_p)
+void  write(fstream& file, double* phi, int N_p)
 {
     for(int m=0; m<N_p; m++)
     {
@@ -530,9 +530,9 @@ void	write(fstream& file, double* phi, int N_p)
     return;
 }
 
-void	write(double* phi, double**& Points, int**& Elements, int& myN_p, int& myN_e, int l)
+void  write(double* phi, double**& Points, int**& Elements, int& myN_p, int& myN_e, int l)
 {
-	fstream         file;
+  fstream         file;
     char            fileName[64];
 
     sprintf(fileName, "VTKOutput/Assignment2_%03d.vtk", l);
@@ -540,9 +540,9 @@ void	write(double* phi, double**& Points, int**& Elements, int& myN_p, int& myN_
     file.open(fileName, ios::out);
 
     file << "# vtk DataFile Version 2.0"<< endl;
-    file << "untitled, Created by me"	<< endl;
-    file << "ASCII"						<< endl;
-    file << "DATASET UNSTRUCTURED_GRID"	<< endl;
+    file << "untitled, Created by me"  << endl;
+    file << "ASCII"            << endl;
+    file << "DATASET UNSTRUCTURED_GRID"  << endl;
 
     file << "POINTS " << myN_p << " double" << endl;
     for(int p=0; p<myN_p; p++)
@@ -572,28 +572,28 @@ void	write(double* phi, double**& Points, int**& Elements, int& myN_p, int& myN_
 
     file.close();
 
-	return;
+  return;
 }
 
 
-void	assemble(SparseMatrix& M, SparseMatrix& K, double* s, double* phi, bool* Free, bool* Fixed, double** Points, int** Faces, int** Elements, Boundary* Boundaries, int N_p, int N_f, int N_e, int N_b)
+void  assemble(SparseMatrix& M, SparseMatrix& K, double* s, double* phi, bool* Free, bool* Fixed, double** Points, int** Faces, int** Elements, Boundary* Boundaries, int N_p, int N_f, int N_e, int N_b)
 {
     cout << "Assembling system... " << flush;
 
-    double	x[4];
-    double	y[4];
+    double  x[4];
+    double  y[4];
     double  z[4];
-    double	gradEta[3][4];
-    double	gradEta_p[3]= {0.0, 0.0, 0.0};
-    double	gradEta_q[3]= {0.0, 0.0, 0.0};
-    double	M_e[4][4]	= {{2.0, 1.0, 1.0, 1.0}, {1.0, 2.0, 1.0, 1.0}, {1.0, 1.0, 2.0, 1.0}, {1.0, 1.0, 1.0, 2.0}};
-    double	R_o[3][3]	= {{2.0, 1.0, 1.0}, {1.0, 2.0, 1.0}, {1.0, 1.0, 2.0}};
-    double	s_e[4]		= {1.0, 1.0, 1.0, 1.0};
-    int		Nodes[4]	= {0, 0, 0, 0};
-    double* Omega		= new double [N_e];
-    double* Gamma		= new double [N_f];
-    int		m;
-    int		n;
+    double  gradEta[3][4];
+    double  gradEta_p[3]= {0.0, 0.0, 0.0};
+    double  gradEta_q[3]= {0.0, 0.0, 0.0};
+    double  M_e[4][4]  = {{2.0, 1.0, 1.0, 1.0}, {1.0, 2.0, 1.0, 1.0}, {1.0, 1.0, 2.0, 1.0}, {1.0, 1.0, 1.0, 2.0}};
+    double  R_o[3][3]  = {{2.0, 1.0, 1.0}, {1.0, 2.0, 1.0}, {1.0, 1.0, 2.0}};
+    double  s_e[4]    = {1.0, 1.0, 1.0, 1.0};
+    int    Nodes[4]  = {0, 0, 0, 0};
+    double* Omega    = new double [N_e];
+    double* Gamma    = new double [N_f];
+    int    m;
+    int    n;
     double  a = 0.00;
     double  b = 0.00;
     double  c = 0.00;
@@ -611,15 +611,15 @@ void	assemble(SparseMatrix& M, SparseMatrix& K, double* s, double* phi, bool* Fr
     {
         for(int p=0; p<3; p++)
         {
-            x[p]	= Points[Faces[f][p]][0];
-            y[p]	= Points[Faces[f][p]][1];
-            z[p]	= Points[Faces[f][p]][2];
+            x[p]  = Points[Faces[f][p]][0];
+            y[p]  = Points[Faces[f][p]][1];
+            z[p]  = Points[Faces[f][p]][2];
         }
         a = sqrt((x[1]-x[0])*(x[1]-x[0]) + (y[1]-y[0])*(y[1]-y[0]) + (z[1]-z[0])*(z[1]-z[0]));
         b = sqrt((x[2]-x[1])*(x[2]-x[1]) + (y[2]-y[1])*(y[2]-y[1]) + (z[2]-z[1])*(z[2]-z[1]));
         c = sqrt((x[2]-x[0])*(x[2]-x[0]) + (y[2]-y[0])*(y[2]-y[0]) + (z[2]-z[0])*(z[2]-z[0]));
 
-        Gamma[f]	= sqrt((a+b+c)*(-a+b+c)*(a-b+c)*(a+b-c))/4;
+        Gamma[f]  = sqrt((a+b+c)*(-a+b+c)*(a-b+c)*(a+b-c))/4;
     }
 
     // Calculate element volumes
@@ -627,9 +627,9 @@ void	assemble(SparseMatrix& M, SparseMatrix& K, double* s, double* phi, bool* Fr
     {
         for(int p=0; p<4; p++)
         {
-            x[p]	        = Points[Elements[e][p]][0];
-            y[p]	        = Points[Elements[e][p]][1];
-            z[p]	        = Points[Elements[e][p]][2];
+            x[p]          = Points[Elements[e][p]][0];
+            y[p]          = Points[Elements[e][p]][1];
+            z[p]          = Points[Elements[e][p]][2];
         }
         double matrix[4][4] =   {{1.0, x[0], y[0], z[0]},
                                 {1.0, x[1], y[1], z[1]},
@@ -649,9 +649,9 @@ void	assemble(SparseMatrix& M, SparseMatrix& K, double* s, double* phi, bool* Fr
         for(int p=0; p<4; p++)
         {
             Nodes[p]= Elements[e][p];
-            x[p]	= Points[Nodes[p]][0];
-            y[p]	= Points[Nodes[p]][1];
-            z[p]	= Points[Nodes[p]][2];
+            x[p]  = Points[Nodes[p]][0];
+            y[p]  = Points[Nodes[p]][1];
+            z[p]  = Points[Nodes[p]][2];
         }
         // gradETA calculation
         gradEta[0][0] = (z[2-1]*(y[3-1]-y[4-1]) + z[3-1]*(y[4-1]-y[2-1]) + z[4-1]*(y[2-1]-y[3-1]))/(6*Omega[e]);
@@ -672,60 +672,60 @@ void	assemble(SparseMatrix& M, SparseMatrix& K, double* s, double* phi, bool* Fr
         // Outer loop over each node
         for(int p=0; p<4; p++)
         {
-            m		= Nodes[p];
-            gradEta_p[0]	= gradEta[0][p];
-            gradEta_p[1]	= gradEta[1][p];
+            m    = Nodes[p];
+            gradEta_p[0]  = gradEta[0][p];
+            gradEta_p[1]  = gradEta[1][p];
             gradEta_p[2]    = gradEta[2][p];
 
             // Inner loop over each node
             for(int q=0; q<4; q++)
             {
-                n			= Nodes[q];
-                gradEta_q[0]		= gradEta[0][q];
-                gradEta_q[1]		= gradEta[1][q];
-                gradEta_q[2]		= gradEta[2][q];
+                n      = Nodes[q];
+                gradEta_q[0]    = gradEta[0][q];
+                gradEta_q[1]    = gradEta[1][q];
+                gradEta_q[2]    = gradEta[2][q];
 
-                M(m,n)	   += rho*C*M_e[p][q]*Omega[e]/20;
-                K(m,n)	   -= (k*(gradEta_p[0]*gradEta_q[0]+gradEta_p[1]*gradEta_q[1]+gradEta_p[2]*gradEta_q[2])*Omega[e]);
+                M(m,n)     += rho*C*M_e[p][q]*Omega[e]/20;
+                K(m,n)     -= (k*(gradEta_p[0]*gradEta_q[0]+gradEta_p[1]*gradEta_q[1]+gradEta_p[2]*gradEta_q[2])*Omega[e]);
             }
-            s[m]		   += 0;
+            s[m]       += 0;
         }
     }
 
     // Apply boundary conditions
     for(int b=0; b<N_b; b++)
     {
-        if		(Boundaries[b].type_=="neumann")
+        if    (Boundaries[b].type_=="neumann")
         {
             for(int f=0; f<Boundaries[b].N_; f++)
             {
                 for(int p=0; p<3; p++)
                 {
-                    Nodes[p]	= Faces[Boundaries[b].indices_[f]][p];
-                    m			= Nodes[p];
-                    s[m]	   += q_base*Gamma[Boundaries[b].indices_[f]]/3;
+                    Nodes[p]  = Faces[Boundaries[b].indices_[f]][p];
+                    m      = Nodes[p];
+                    s[m]     += q_base*Gamma[Boundaries[b].indices_[f]]/3;
                 }
             }
         }
-        else if	(Boundaries[b].type_=="robin")
+        else if  (Boundaries[b].type_=="robin")
         {
             for(int f=0; f<Boundaries[b].N_; f++)
             {
                 for(int p=0; p<3; p++)
                 {
-                    Nodes[p]	= Faces[Boundaries[b].indices_[f]][p];
-                    m			= Nodes[p];
-                    s[m]	   += h*T_air*Gamma[Boundaries[b].indices_[f]]/3;
+                    Nodes[p]  = Faces[Boundaries[b].indices_[f]][p];
+                    m      = Nodes[p];
+                    s[m]     += h*T_air*Gamma[Boundaries[b].indices_[f]]/3;
                 }
 
                 for(int p=0; p<3; p++)
                 {
-                    m		= Nodes[p];
+                    m    = Nodes[p];
                     // Inner loop over each node
                     for(int q=0; q<3; q++)
                     {
-                        n			= Nodes[q];
-                        K(m,n)	   -= (h*R_o[p][q]*Gamma[Boundaries[b].indices_[f]])/12;
+                        n      = Nodes[q];
+                        K(m,n)     -= (h*R_o[p][q]*Gamma[Boundaries[b].indices_[f]])/12;
                     }
                 }
             }
@@ -743,30 +743,30 @@ void	assemble(SparseMatrix& M, SparseMatrix& K, double* s, double* phi, bool* Fr
     return;
 }
 
-void	solve(SparseMatrix& A, double* phi, double* b, bool* Free, bool* Fixed)
+void  solve(SparseMatrix& A, double* phi, double* b, bool* Free, bool* Fixed)
 {
-    int		N_row			= A.getNrow();
-    double*	r_old			= new double [N_row];
-    double*	r				= new double [N_row];
-    double*	d				= new double [N_row];
-    double*	Ad				= new double [N_row];
-    double*	Aphi			= new double [N_row];
-    double	alpha			= 0.0;
-    double	beta			= 0.0;
-    double	r_norm			= 0.0;
-    double	tolerance		= 1e-8;
-    double	N_k             = 1e3;
-    double	r_oldTr_old		= 0.0;
-    double	rTr				= 0.0;
-    double	dTAd			= 0.0;
-    int		k				= 0;
-    int		m				= 0;
-    int		n				= 0;
+    int    N_row      = A.getNrow();
+    double*  r_old      = new double [N_row];
+    double*  r        = new double [N_row];
+    double*  d        = new double [N_row];
+    double*  Ad        = new double [N_row];
+    double*  Aphi      = new double [N_row];
+    double  alpha      = 0.0;
+    double  beta      = 0.0;
+    double  r_norm      = 0.0;
+    double  tolerance    = 1e-8;
+    double  N_k             = 1e3;
+    double  r_oldTr_old    = 0.0;
+    double  rTr        = 0.0;
+    double  dTAd      = 0.0;
+    int    k        = 0;
+    int    m        = 0;
+    int    n        = 0;
 
-    memset(r_old,		0, N_row*sizeof(double));
-    memset(r,			0, N_row*sizeof(double));
-    memset(d,			0, N_row*sizeof(double));
-    memset(Ad,			0, N_row*sizeof(double));
+    memset(r_old,    0, N_row*sizeof(double));
+    memset(r,      0, N_row*sizeof(double));
+    memset(d,      0, N_row*sizeof(double));
+    memset(Ad,      0, N_row*sizeof(double));
 
     // Compute the initial residual
     A.multiply(Aphi, phi, Free, Free);
@@ -774,8 +774,8 @@ void	solve(SparseMatrix& A, double* phi, double* b, bool* Free, bool* Fixed)
     {
         if(Free[m])
         {
-            r_old[m]	= b[m] - Aphi[m];
-            d[m]		= r_old[m];
+            r_old[m]  = b[m] - Aphi[m];
+            d[m]    = r_old[m];
             r_oldTr_old+= r_old[m]*r_old[m];
         }
     }
@@ -784,7 +784,7 @@ void	solve(SparseMatrix& A, double* phi, double* b, bool* Free, bool* Fixed)
     // Conjugate Gradient iterative loop
     while(r_norm>tolerance && k<N_k)
     {
-        dTAd	= 0.0;
+        dTAd  = 0.0;
         A.multiply(Ad, d, Free, Free);
         for(m=0; m<N_row; m++)
         {
@@ -793,7 +793,7 @@ void	solve(SparseMatrix& A, double* phi, double* b, bool* Free, bool* Fixed)
                 dTAd   += d[m]*Ad[m];
             }
         }
-        alpha  	= r_oldTr_old/dTAd;
+        alpha    = r_oldTr_old/dTAd;
         for(m=0; m<N_row; m++)
         {
             if(Free[m])
@@ -805,10 +805,10 @@ void	solve(SparseMatrix& A, double* phi, double* b, bool* Free, bool* Fixed)
         {
             if(Free[m])
             {
-                r[m]	= r_old[m] - alpha*Ad[m];
+                r[m]  = r_old[m] - alpha*Ad[m];
             }
         }
-        rTr	= 0.0;
+        rTr  = 0.0;
         for(m=0; m<N_row; m++)
         {
             if(Free[m])
@@ -816,7 +816,7 @@ void	solve(SparseMatrix& A, double* phi, double* b, bool* Free, bool* Fixed)
                 rTr  += r[m]*r[m];
             }
         }
-        beta  	= rTr/r_oldTr_old;
+        beta    = rTr/r_oldTr_old;
         for(m=0; m<N_row; m++)
         {
             if(Free[m])
@@ -831,8 +831,8 @@ void	solve(SparseMatrix& A, double* phi, double* b, bool* Free, bool* Fixed)
                 r_old[m] = r[m];
             }
         }
-        r_oldTr_old	= rTr;
-        r_norm		= sqrt(rTr);
+        r_oldTr_old  = rTr;
+        r_norm    = sqrt(rTr);
         k++;
     }
 

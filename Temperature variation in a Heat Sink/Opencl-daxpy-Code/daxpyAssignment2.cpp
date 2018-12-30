@@ -2,7 +2,7 @@
 //
 // Applied High Perfomance Computing
 //
-// Problem:		Computing daxpy with OpenCL
+// Problem:   Computing daxpy with OpenCL
 //
 // Author :   Anubhav Singh
 //
@@ -169,7 +169,7 @@ int main(int argc, char** argv)
     //    cout <<  y_h[i]  << endl;
     // }
 
-	return 0;
+  return 0;
 }
 
 void initialize(cl_platform_id& platformID, cl_device_id& deviceID, cl_context& context, cl_command_queue& commandQueue, cl_program& program, cl_kernel& daxpy, int D)
