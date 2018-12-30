@@ -24,6 +24,6 @@ Shallow water elevation at T = 25 seconds
 ![Shallow water elevation 3](https://github.com/anubhav-cs/Numerical-Methods/blob/master/Shallow%20Water%20Flow/images/cpp3.png)
 Shallow water elevation at T = 40 seconds
 
-![Stability analysis](https://github.com/anubhav-cs/Numerical-Methods/blob/master/Shallow%20Water%20Flow/images/stability.png)
+![Strong scaling](https://github.com/anubhav-cs/Numerical-Methods/blob/master/Shallow%20Water%20Flow/images/StrongScale.png)
 
-![Phase error analysis](https://github.com/anubhav-cs/Numerical-Methods/blob/master/Shallow%20Water%20Flow/images/phase.png)
+![Weak scaling](https://github.com/anubhav-cs/Numerical-Methods/blob/master/Shallow%20Water%20Flow/images/WeakScale.png)
