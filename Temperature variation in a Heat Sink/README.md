@@ -26,3 +26,8 @@
   4. d<sup>k+1</sup> = r<sup>k+1</sup> + β d<sup>k</sup>
 
   **The 1<sup>st</sup>, 2<sup>nd</sup> and 4<sup>th</sup> equation can be parallelized using the ‘daxpy’ method, where as both the numerator and denominator of 3<sup>rd</sup> equation can be calculated used the inner-product method.** Each of the parameters here are 1D-vector stored in an array of size <number of points>. The parallelization is beneficial here since these can be very large vectors with hundred thousands of points. This is specially true for ‘daxpy’ method since the entire calculation can be parallelized in one step. However, for the inner product the product of individual items has to be summed up as well, which leads to some amount of serialization in execution of the OpenCL Code.
+
+  ![Temperature variation](https://github.com/anubhav-cs/Numerical-Methods/blob/master/Temperature%20variation%20in%20a%20Heat%20Sink/images/max_temp_variation.png)
+  *Maximum temperature variation over time*
+  ![3D temperature variation](https://github.com/anubhav-cs/Numerical-Methods/blob/master/Temperature%20variation%20in%20a%20Heat%20Sink/images/3D_temp_variation.png)
+  *Image showing variation of temperature at T=85 seconds, on the outer surface of the 3D heat-sink*
