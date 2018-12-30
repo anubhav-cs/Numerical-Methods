@@ -13,6 +13,8 @@ The set of following equations represent the shallow water equations.
 
 The resulting instruction set had code blocks which were embarrassingly parallel, for which Open-MP*(shared memory model)* code was developed. In addition Open-MPI(*distributed memory model*) code was developed for section of code which could be parallelized, but required message passing.
 
+![Shallow water elevation](https://github.com/anubhav-cs/Numerical-Methods/blob/master/Shallow%20Water%20Flow/images/cpp1.png)
+
 ![Stability analysis](https://github.com/anubhav-cs/Numerical-Methods/blob/master/Shallow%20Water%20Flow/images/stability.png)
 
 ![Phase error analysis](https://github.com/anubhav-cs/Numerical-Methods/blob/master/Shallow%20Water%20Flow/images/phase.png)
