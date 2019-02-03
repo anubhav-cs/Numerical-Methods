@@ -4,6 +4,7 @@ This repository contains solution to partial differential equations, correspondi
 
 # 1.  Modeling of shallow-water flow, using shallow-water equations. #
 **REPORT :** [link](https://github.com/anubhav-cs/Numerical-Methods/blob/master/Shallow%20Water%20Flow/Modelling%20the%20Shallow%20Water%20Flow.pdf)
+
 The set of following equations represent the shallow water equations.
 
 * δv<sub>x</sub> /δt = −v<sub>x</sub>(δv<sub>x</sub>/δx)−v<sub>y</sub> (δv<sub>x</sub>/δy) − g(δh/δx)
