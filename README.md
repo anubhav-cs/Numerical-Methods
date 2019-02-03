@@ -17,6 +17,7 @@ The set of following equations represent the shallow water equations.
 The resulting instruction set had code blocks which were embarrassingly parallel, for which Open-MP*(shared memory model)* code was developed. In addition Open-MPI(*distributed memory model*) code was developed for section of code which could be parallelized, but required message passing.
 
 # 2. Measuring Temperature variation as a function of time in a 3D heat sink. #
+**REPORT**: [link](https://github.com/anubhav-cs/Numerical-Methods/blob/master/Temperature%20variation%20in%20a%20Heat%20Sink/TheHeatEquation_HeatSink.pdf)
 
 * The Heat Equation:
 
